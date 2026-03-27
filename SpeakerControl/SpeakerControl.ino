@@ -22,7 +22,8 @@
  *   VS1053 CS   = Pin 6
  *   VS1053 DCS  = Pin 10
  *   VS1053 DREQ = Pin 9
- *   SD Card CS  = Pin 5  (not used yet)
+ *   SD Card CS  = Pin 5   (not used yet)
+ *   LED         = Pin 11  (HIGH while speaker is active; use 100–330Ω series resistor)
  */
 
 #include <SPI.h>
@@ -33,6 +34,7 @@
 #define VS1053_DCS   10
 #define VS1053_DREQ   9
 #define CARDCS         5
+#define LED_INDICATOR 11   // External LED: HIGH when speaker is active
 
 // ── VS1053 register / bit constants ──
 #define VS1053_REG_MODE  0x00
@@ -84,6 +86,9 @@ void setup() {
   Serial.println(F(" Acoustic Stimulation - Speaker Control"));
   Serial.println(F(" Feather M4 + Music Maker FeatherWing"));
   Serial.println(F("========================================"));
+
+  pinMode(LED_INDICATOR, OUTPUT);
+  digitalWrite(LED_INDICATOR, LOW);
 
   if (!musicPlayer.begin()) {
     Serial.println(F("ERROR: VS1053 not found! Check wiring."));
@@ -273,6 +278,8 @@ void sineStart(uint8_t n, uint8_t amplitudePct) {
   }
   digitalWrite(VS1053_DCS, HIGH);
   SPI.endTransaction();
+
+  digitalWrite(LED_INDICATOR, HIGH);
 }
 
 void sineStop() {
@@ -297,6 +304,8 @@ void sineStop() {
   uint16_t mode = musicPlayer.sciRead(VS1053_REG_MODE);
   mode &= ~SM_TESTS;
   musicPlayer.sciWrite(VS1053_REG_MODE, mode);
+
+  digitalWrite(LED_INDICATOR, LOW);
 }
 
 // ═══════════════════════════════════════════════════════════════
